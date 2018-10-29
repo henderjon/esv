@@ -2,24 +2,24 @@ package main
 
 import (
 	"bufio"
-	"html/template"
-	"log"
 	"os"
+	"text/template"
 )
 
 func main() {
 	params := getOptParams()
-	lookup(params.API.Reference, params.API.Token)
+	pass := lookup(params.API.Reference, params.API.Token)
+	render(pass.Passages)
 }
 
-func lookup(ref, token string) {
+func lookup(ref, token string) passage {
 	if len(ref) == 0 {
 		stdin := bufio.NewReader(os.Stdin)
 		ref, _ = stdin.ReadString('\n')
 	}
 
-	passage := query(ref, token)
-	render(passage.Passages)
+	return query(ref, token)
+
 }
 
 // renders the given passage reference
@@ -29,7 +29,7 @@ func render(ref []string) {
 	for _, s := range ref {
 		err := t.Execute(os.Stdout, s)
 		if err != nil {
-			log.Fatal(err)
+			logger.Println(err)
 		}
 	}
 }

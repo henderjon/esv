@@ -1,15 +1,15 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/url"
+	"os"
 )
 
 // passage represents the return payload for v3 of the ESV api
 type passage struct {
+	Detail      string   `json:"detail"`
 	Query       string   `json:"query"`
 	Canonical   string   `json:"canonical"`
 	Parsed      [][]int  `json:"parsed"`
@@ -52,47 +52,46 @@ var (
 
 // get a passage of scripture by reference from the ESV Web API
 func query(ref, token string) passage {
-
+	var ok bool
 	vals := &url.Values{}
 	vals.Set("q", ref)
-	for k, v := range opts {
-		vals.Set(k, v)
-	}
+	// for k, v := range opts {
+	// vals.Set(k, v)
+	// }
 
 	url, err := url.Parse(api)
 	if err != nil {
-		log.Fatal(err)
+		logger.Println(err)
 	}
 
 	url.RawQuery = vals.Encode()
 
 	req, err := http.NewRequest("GET", url.String(), nil)
 
-	// token, ok := os.LookupEnv("ESVTOKEN")
-	// if !ok {
-	// 	log.Fatal("missing env var: ESVTOKEN")
-	// }
+	if len(token) == 0 {
+		token, ok = os.LookupEnv("ESVTOKEN")
+		if !ok {
+			logger.Println("missing env var: ESVTOKEN")
+		}
+	}
 
 	req.Header.Set("Authorization", "Token "+token)
-	req.Header.Set("Accept", "application/json")
 
 	res, err := (&http.Client{}).Do(req)
 	if err != nil {
-		log.Fatal(err)
+		logger.Println(err)
 	}
 
 	defer res.Body.Close()
-	buf := bytes.Buffer{}
-
-	_, err = buf.ReadFrom(res.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	var passage passage
-	err = json.Unmarshal(buf.Bytes(), &passage)
+	err = (json.NewDecoder(res.Body)).Decode(&passage)
 	if err != nil {
-		log.Fatal(err)
+		logger.Println(err)
+	}
+
+	if res.StatusCode != http.StatusOK {
+		logger.Println(res.Status, passage.Detail)
 	}
 
 	return passage
