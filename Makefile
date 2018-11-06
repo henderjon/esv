@@ -5,13 +5,18 @@ DEPLOYMENT_PATH=bin/release/$(BIN)/$(BIN)-$(HEAD)
 
 LDFLAGS="-X main.buildVersion=$(HEAD) -X 'main.buildTimestamp=$(TIMESTAMP)'"
 
-all: print
+all: clean print
 
 .PHONY: build
 build: darwin64 linux64
 
 clean:
 	rm -f $(BIN) $(BIN)-*
+	go mod vendor
+
+.PHONY: local
+local:
+	go build -ldflags $(LDFLAGS) -o $(BIN)
 
 darwin64:
 	env GOOS=darwin GOARCH=amd64 go build -ldflags $(LDFLAGS) -o $(BIN)-darwin64-$(HEAD)

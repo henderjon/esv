@@ -3,33 +3,23 @@ package main
 import (
 	"bufio"
 	"os"
-	"text/template"
 )
 
 func main() {
 	params := getOptParams()
-	pass := lookup(params.API.Reference, params.API.Token)
-	render(pass.Passages)
-}
+	var q string
 
-func lookup(ref, token string) passage {
-	if len(ref) == 0 {
-		stdin := bufio.NewReader(os.Stdin)
-		ref, _ = stdin.ReadString('\n')
+	if len(params.API.Search) != 0 {
+		getESVSearch(params.API.Search, params.API.Token)
 	}
 
-	return query(ref, token)
+	if len(params.API.Reference) != 0 {
+		getESVReference(params.API.Reference, params.API.Token)
+	}
 
-}
-
-// renders the given passage reference
-func render(ref []string) {
-	t, _ := template.New("all").Parse("{{.}}\n")
-
-	for _, s := range ref {
-		err := t.Execute(os.Stdout, s)
-		if err != nil {
-			logger.Println(err)
-		}
+	if len(params.API.Search) == 0 && len(params.API.Reference) == 0 {
+		stdin := bufio.NewReader(os.Stdin)
+		q, _ = stdin.ReadString('\n')
+		getESVReference(q, params.API.Token)
 	}
 }

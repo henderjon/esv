@@ -16,6 +16,7 @@ type buildParams struct {
 
 type apiParams struct {
 	Reference string
+	Search    string
 	Token     string
 }
 
@@ -32,6 +33,7 @@ func getOptParams() *getOptParameters {
 	params := &getOptParameters{}
 	flag.BoolVar(&params.Build.Debug, "debug", false, "once more, with feeling")
 	flag.StringVar(&params.API.Reference, "ref", "", "the reference to look up")
+	flag.StringVar(&params.API.Search, "search", "", "a string to search")
 	flag.StringVar(&params.API.Token, "api-token", "", "the token to use for the ESV api; optionally, this can be stored in an ENV var 'ESVTOKEN'")
 	flag.BoolVar(&params.Help, "help", false, "show this message")
 	flag.Parse()
